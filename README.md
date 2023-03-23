@@ -5,9 +5,13 @@ Golang Implementation of Streaming Merkle Root, Proof, and Verify (single leaf) 
 ## Usage
 
 ```golang
-blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
-root := merkleRoot(blkstream)
-fmt.Printf("Merkle root: %x\n", root)
+import "github.com/jlogelin/fast-merkle"
+
+func main() {
+  blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
+  root := MerkleRoot(blkstream)
+  fmt.Printf("Merkle root: %x\n", root)
+}
 ```
 
 ## Benchmark
