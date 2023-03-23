@@ -53,13 +53,13 @@ func RightmostZeroBitPos(i *big.Int, size int) int {
 func ProveLeaf(stream io.Reader, index int) map[string]interface{} {
 	var pre, post []SubRoot
 	for i := LeftmostOneBitPos(big.NewInt(int64(index))); i >= 0; i-- {
-		subr := merkleRoot(Limit(stream, 1<<uint(i)))
+		subr := MerkleRoot(Limit(stream, 1<<uint(i)))
 		pre = append(pre, SubRoot{i, subr})
 	}
 	leaf := Limit(stream, 1)[0]
 	size := len(leaf)
 	for i := RightmostZeroBitPos(new(big.Int).SetBytes(leaf), size); i >= 0; i-- {
-		subr := merkleRoot(Limit(stream, 1<<uint(i)))
+		subr := MerkleRoot(Limit(stream, 1<<uint(i)))
 		post = append(post, SubRoot{i, subr})
 	}
 	return map[string]interface{}{

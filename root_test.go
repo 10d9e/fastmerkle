@@ -13,7 +13,7 @@ func BenchmarkMerkleRoot(b *testing.B) {
 		blkstream[i] = []byte("42")
 	}
 
-	_ = merkleRoot(blkstream)
+	_ = MerkleRoot(blkstream)
 }
 
 func TestMerkleRoot(t *testing.T) {
@@ -35,7 +35,7 @@ func TestMerkleRoot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := merkleRoot(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
+			if got := MerkleRoot(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("merkleRoot() = %v, want %v", got, tt.want)
 			}
 		})

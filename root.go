@@ -59,7 +59,7 @@ func finalize(s map[int][]byte) []byte {
 	return foldr(parentHash, vals)
 }
 
-func merkleRoot(stream [][]byte) []byte {
+func MerkleRoot(stream [][]byte) []byte {
 	if len(stream) == 0 {
 		return nil
 	}
@@ -84,7 +84,7 @@ func main() {
 	blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
 
 	start := time.Now()
-	root := merkleRoot(blkstream)
+	root := MerkleRoot(blkstream)
 	elapsed := time.Since(start)
 	fmt.Printf("Merkle root: %x\n", root)
 	fmt.Printf("Elapsed time: %s\n", elapsed)
