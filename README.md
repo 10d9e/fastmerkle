@@ -9,3 +9,12 @@ Golang Implementation of Streaming Merkle Root, Proof, and Verify (single leaf) 
 	root := merkleRoot(blkstream)
 	fmt.Printf("Merkle root: %x\n", root)
 ```
+
+## Benchmark
+
+The following benchmark was run on an Apple M1 Pro 32 GB. Parameters: 33554432 elements
+
+| Project  | Execution Time |
+| ------------- | ------------- |
+| [fast-merkle](github.com/jlogelin/fastmerkle) | 8s |
+| [go-merkletree](github.com/txaty/go-merkletree) | 2m 23s |
