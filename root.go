@@ -2,9 +2,8 @@ package main
 
 import (
 	//"crypto/sha256"
-	"fmt"
+
 	"sort"
-	"time"
 
 	"github.com/minio/sha256-simd"
 )
@@ -68,25 +67,4 @@ func MerkleRoot(stream [][]byte) []byte {
 		m = insert(m, leafHash(v), 0)
 	}
 	return finalize(m)
-}
-
-func main() {
-	/*
-		iterations := 67108864
-		// iterations := 33554432
-		// iterations := 4194304
-		blkstream := make([][]byte, iterations)
-		for i := 0; i < iterations; i++ {
-			blkstream[i] = []byte("42") //fmt.Sprint(i)
-		}
-	*/
-
-	blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
-
-	start := time.Now()
-	root := MerkleRoot(blkstream)
-	elapsed := time.Since(start)
-	fmt.Printf("Merkle root: %x\n", root)
-	fmt.Printf("Elapsed time: %s\n", elapsed)
-
 }
