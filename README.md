@@ -5,14 +5,18 @@ Golang Implementation of Streaming Merkle Root, Proof, and Verify (single leaf) 
 ## Usage
 
 ```golang
-	blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
-	root := merkleRoot(blkstream)
-	fmt.Printf("Merkle root: %x\n", root)
+blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
+root := merkleRoot(blkstream)
+fmt.Printf("Merkle root: %x\n", root)
 ```
 
 ## Benchmark
 
-The following benchmark was run on an Apple M1 Pro 32 GB. Parameters: 33554432 elements
+The following benchmark was run on an `Apple M1 Pro 32 GB`.
+
+Parameters: 
+- 33554432 elements
+- sha256 hash
 
 | Project  | Execution Time |
 | ------------- | ------------- |
