@@ -1,98 +1,131 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"io"
-	"math/big"
-
-	"github.com/minio/sha256-simd"
+	"encoding/hex"
+	"fmt"
+	"strconv"
 )
 
-type SubRoot struct {
-	I    int
-	SubR []byte
+type proof struct {
+	pre  []subRoot
+	leaf []byte
+	post []subRoot
 }
 
-func Limit(r io.Reader, n int) [][]byte {
-	var lines [][]byte
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() && (n == 0 || len(lines) < n) {
-		lines = append(lines, scanner.Bytes())
-	}
-	return lines
+type subRoot struct {
+	i    int
+	subr []byte
 }
 
-func LeftmostOneBitPos(i *big.Int) int {
-	zero := big.NewInt(0)
-	one := big.NewInt(1)
-	pos := 0
-	for i.Cmp(zero) > 0 {
-		if i.And(i, i.Sub(i, one)).Cmp(zero) == 0 {
-			return pos
+func limit(stream [][]byte, n int) [][]byte {
+	r := make([][]byte, 0)
+	for _, s := range stream {
+		if n == 0 {
+			break
 		}
-		i.Rsh(i, 1)
-		pos++
+		r = append(r, []byte(s))
+		n--
 	}
-	return -1
+	return r
 }
 
-func RightmostZeroBitPos(i *big.Int, size int) int {
-	zero := big.NewInt(0)
-	one := big.NewInt(1)
-	pos := size - 1
-	for i.Cmp(one.Lsh(big.NewInt(int64(size)), uint(pos))) >= 0 && pos >= 0 {
-		if i.And(i, one.Lsh(big.NewInt(int64(size)), uint(pos))).Cmp(zero) == 0 {
-			return pos
+func subroot(stream [][]byte, k int) []byte {
+	return MerkleRoot(limit(stream, 1<<k))
+}
+
+func readLeaf(stream [][]byte) []byte {
+	if len(stream) == 0 {
+		return nil
+	}
+	return leafHash(stream[0])
+}
+
+func stringToByteSlice(s string) []byte {
+	return []byte(s)
+}
+
+func bitTest(i int, n int) bool {
+	return (i & (1 << n)) != 0
+}
+
+func ones(i int) []int {
+	r := []int{}
+	for n := 0; n < 32; n++ {
+		if bitTest(i, n) {
+			r = append(r, n)
 		}
-		pos--
 	}
-	return pos
+	return r
 }
 
-func ProveLeaf(stream io.Reader, index int) map[string]interface{} {
-	var pre, post []SubRoot
-	for i := LeftmostOneBitPos(big.NewInt(int64(index))); i >= 0; i-- {
-		subr := MerkleRoot(Limit(stream, 1<<uint(i)))
-		pre = append(pre, SubRoot{i, subr})
+func zeros(i int) []int {
+	r := []int{}
+	for n := 0; n < 32; n++ {
+		if !bitTest(i, n) {
+			r = append(r, n)
+		}
 	}
-	leaf := Limit(stream, 1)[0]
-	size := len(leaf)
-	for i := RightmostZeroBitPos(new(big.Int).SetBytes(leaf), size); i >= 0; i-- {
-		subr := MerkleRoot(Limit(stream, 1<<uint(i)))
-		post = append(post, SubRoot{i, subr})
-	}
-	return map[string]interface{}{
-		"pre":  pre,
-		"leaf": leaf,
-		"post": post,
-	}
+	return r
 }
 
-func LoadStack(stk map[int][]byte, blks []SubRoot) map[int][]byte {
+func proveLeaf(stream [][]byte, index int) *proof {
+	pre := make([]subRoot, 0, len(ones(index)))
+	for _, k := range ones(index) {
+		pre = append(pre, subRoot{i: k, subr: subroot(stream, k)})
+	}
+	post := make([]subRoot, 0, len(zeros(index)))
+	for _, k := range zeros(index) {
+		post = append(post, subRoot{i: k, subr: subroot(stream, k)})
+	}
+	return &proof{pre: pre, leaf: readLeaf(stream), post: post}
+}
+
+func loadStack(stk map[int][]byte, blks []subRoot) map[int][]byte {
 	for _, blk := range blks {
-		stk[blk.I] = blk.SubR
+		stk = insert(stk, blk.subr, blk.i)
 	}
 	return stk
 }
 
-func RootFromProofAndLeaf(leaf []byte, proof map[string]interface{}) []byte {
+func rootFromProofAndLeaf(leaf []byte, proof *proof) []byte {
 	stk := make(map[int][]byte)
-	for _, pre := range proof["pre"].([]SubRoot) {
-		stk = LoadStack(stk, []SubRoot{pre})
-	}
-	stk = insert(stk, sha256Hash(leaf), 0)
-	for _, post := range proof["post"].([]SubRoot) {
-		stk = LoadStack(stk, []SubRoot{post})
-	}
+	stk = loadStack(stk, proof.pre)
+	stk = insert(stk, leaf, 0)
+	stk = loadStack(stk, proof.post)
 	return finalize(stk)
 }
 
-func VerifyLeaf(knownroot []byte, leaf []byte, proof map[string]interface{}) bool {
-	return bytes.Equal(knownroot, RootFromProofAndLeaf(leaf, proof))
+func verifyLeaf(knownroot []byte, leaf []byte, proof *proof) bool {
+	return bytes.Equal(knownroot, rootFromProofAndLeaf(leaf, proof))
 }
 
-func sha256Hash(data []byte) []byte {
-	h := sha256.Sum256(data)
-	return h[:]
+func main() {
+	// arbitrary example block stream with 12 'blocks'
+
+	blkstream := make([][]byte, 12)
+	for i := 0; i < len(blkstream); i++ {
+		blkstream[i] = []byte(strconv.Itoa(i))
+	}
+
+	// blkstream := [][]byte{[]byte("a"), []byte("b"), []byte("c")}
+
+	// generate proof for leaf at index 6
+	proof := proveLeaf(blkstream, 6)
+	fmt.Printf("proof: %+v\n", proof)
+
+	// calculate Merkle root
+	expectedRoot := "c2ff85521db556cc6b72381f33dbfed5e570f9137acd7e195a496201cf23500e"
+
+	// verify the proof
+	verificationHash := rootFromProofAndLeaf(proof.leaf, proof)
+	fmt.Printf("verification hash: %s\n", hex.EncodeToString(verificationHash))
+	fmt.Printf("expected root: %s\n", expectedRoot)
+
+	// compare the verification hash to the expected Merkle root
+	if hex.EncodeToString(verificationHash) == expectedRoot {
+		fmt.Println("Verification successful!")
+	} else {
+		fmt.Println("Verification failed.")
+	}
 }
