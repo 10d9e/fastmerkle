@@ -25,6 +25,6 @@ Parameters:
 | Project  | Execution Time |
 | ------------- | ------------- |
 | [fast-merkle](https://github.com/jlogelin/fastmerkle) | 8.320988875s |
-| [txaty/go-merkletree](https://github.com/txaty/go-merkletree) | 2m 37s |
 | [cbergoon/merkletree](https://github.com/cbergoon/merkletree) | 26.294219875s |
 | [wealdtech/go-merkletree](https://github.com/wealdtech/go-merkletree) | 30.399641917s |
+| [txaty/go-merkletree](https://github.com/txaty/go-merkletree) | 2m 37s |
