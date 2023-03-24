@@ -16,7 +16,7 @@ func main() {
 
 ## Benchmark
 
-The following benchmark was run on an `Apple M1 Pro 32 GB`.
+The following root node calculation benchmark was run on an `Apple M1 Pro 32 GB`.
 
 Parameters: 
 - 33554432 elements
