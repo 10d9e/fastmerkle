@@ -28,5 +28,3 @@ Parameters:
 | [txaty/go-merkletree](https://github.com/txaty/go-merkletree) | 2m 37s |
 | [cbergoon/merkletree](https://github.com/cbergoon/merkletree) | 26.294219875s |
 | [wealdtech/go-merkletree](https://github.com/wealdtech/go-merkletree) | 30.399641917s |
-
-26.294219875s
