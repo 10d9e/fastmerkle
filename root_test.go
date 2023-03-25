@@ -1,4 +1,4 @@
-package fastmerkle
+package main
 
 import (
 	"crypto/rand"
