@@ -1,4 +1,4 @@
-module github.com/jlogelin/fast-merkle
+module github.com/jlogelin/fastmerkle
 
 go 1.18
 
