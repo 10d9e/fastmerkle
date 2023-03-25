@@ -26,7 +26,7 @@ func (tree *MerkleTree) limit(stream [][]byte, n int) [][]byte {
 }
 
 func (tree *MerkleTree) subroot(stream [][]byte, k int) []byte {
-	return tree.root(tree.limit(stream, 1<<k))
+	return tree.Root(tree.limit(stream, 1<<k))
 }
 
 func (tree *MerkleTree) readLeaf(stream [][]byte) []byte {
@@ -89,7 +89,7 @@ func (tree *MerkleTree) rootFromProofAndLeaf(leaf []byte, proof *Proof) []byte {
 	stk = tree.insert(stk, leaf, 0)
 	stk = tree.loadStack(stk, proof.post)
 	stk = tree.insert(stk, leaf, 0)
-	return tree.finalize()
+	return tree.Digest()
 }
 
 func (tree *MerkleTree) verifyLeaf(knownroot []byte, leaf []byte, proof *Proof) bool {

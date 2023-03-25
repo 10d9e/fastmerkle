@@ -57,7 +57,7 @@ func (tree *MerkleTree) del(s map[int][]byte, n int) map[int][]byte {
 	return s
 }
 
-func (tree *MerkleTree) finalize() []byte {
+func (tree *MerkleTree) Digest() []byte {
 	var keys []int
 	for k := range tree.m {
 		keys = append(keys, k)
@@ -70,9 +70,9 @@ func (tree *MerkleTree) finalize() []byte {
 	return tree.foldr(tree.parentHash, vals)
 }
 
-func (tree *MerkleTree) root(stream [][]byte) []byte {
+func (tree *MerkleTree) Root(stream [][]byte) []byte {
 	tree.populate(stream)
-	return tree.finalize()
+	return tree.Digest()
 }
 
 func (tree *MerkleTree) populate(stream [][]byte) {
@@ -80,11 +80,11 @@ func (tree *MerkleTree) populate(stream [][]byte) {
 		return
 	}
 	for _, v := range stream {
-		tree.add(v)
+		tree.Add(v)
 	}
 }
 
-func (tree *MerkleTree) add(v []byte) {
+func (tree *MerkleTree) Add(v []byte) {
 	tree.m = tree.insert(tree.m, tree.leafHash(v), 0)
 }
 
@@ -109,12 +109,12 @@ func main2342342323() {
 			log.Fatalf("error while generating random string: %s", err)
 		}
 		//blkstream[i] = buf
-		m.add(buf)
+		m.Add(buf)
 	}
 
 	start := time.Now()
 
-	root := m.finalize()
+	root := m.Digest()
 	elapsed := time.Since(start)
 	fmt.Printf("Merkle root: %x\n", root)
 	fmt.Printf("Elapsed time: %s\n", elapsed)
