@@ -1,19 +1,28 @@
-package main
+package fastmerkle
 
 import (
+	"crypto/rand"
+	"log"
 	"reflect"
 	"testing"
 )
 
 func BenchmarkMerkleRoot(b *testing.B) {
-	// equivalent hashes of a 16G file, chunked into 256 byte tranches
-	iterations := 16 << 30 / 256
+	// equivalent hashes of a 8G file, chunked into 256 byte tranches
+
+	iterations := 8 << 30 / 256
 	blkstream := make([][]byte, iterations)
+	buf := make([]byte, 128)
 	for i := 0; i < iterations; i++ {
-		blkstream[i] = []byte("42")
+		_, err := rand.Read(buf)
+		if err != nil {
+			log.Fatalf("error while generating random string: %s", err)
+		}
+		blkstream[i] = buf
 	}
 
-	_ = MerkleRoot(blkstream)
+	m := New()
+	_ = m.root(blkstream)
 }
 
 func TestMerkleRoot(t *testing.T) {
@@ -35,7 +44,8 @@ func TestMerkleRoot(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MerkleRoot(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
+			m := New()
+			if got := m.root(tt.args.stream); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("merkleRoot() = %v, want %v", got, tt.want)
 			}
 		})
